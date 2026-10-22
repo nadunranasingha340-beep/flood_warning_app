@@ -1,0 +1,27 @@
+{
+  "station": "CHILAW-P.W.D",
+  "date": "2026-10-21",
+  "features": {
+    "rainfall_mm": 6.4,
+    "soil_moisture": 0.328,
+    "elevation": 3.5,
+    "water_level_m": 1.9,
+    "rain_cumulative_3d": 40.1,
+    "rain_cumulative_7d": 62.8,
+    "rain_cumulative_14d": 62.8,
+    "rain_cumulative_30d": 62.8,
+    "api": 49.9978,
+    "wl_lag1": 1.68,
+    "wl_lag2": 1.71,
+    "wl_lag3": 1.62,
+    "wl_diff": 0.21999999999999997,
+    "wl_roll3": 1.7633333333333334,
+    "sm_lag1": 0.302,
+    "sm_diff": 0.026000000000000023,
+    "sm_deficit": 0.6719999999999999,
+    "month_sin": -0.8660254037844386,
+    "month_cos": 0.5000000000000001,
+    "dayofyear": 294,
+    "station_code": 0
+  }
+}

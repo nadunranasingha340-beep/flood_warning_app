@@ -1,0 +1,63 @@
+{
+  "best_model": "XGBoost",
+  "features": [
+    "rainfall_mm",
+    "soil_moisture",
+    "elevation",
+    "water_level_m",
+    "rain_cumulative_3d",
+    "rain_cumulative_7d",
+    "rain_cumulative_14d",
+    "rain_cumulative_30d",
+    "api",
+    "wl_lag1",
+    "wl_lag2",
+    "wl_lag3",
+    "wl_diff",
+    "wl_roll3",
+    "sm_lag1",
+    "sm_diff",
+    "sm_deficit",
+    "month_sin",
+    "month_cos",
+    "dayofyear",
+    "station_code"
+  ],
+  "target": "target_wl_next",
+  "metrics": {
+    "Model": "XGBoost",
+    "MAE": 0.06914888096672216,
+    "RMSE": 0.13863349141843365,
+    "R2": 0.9892862303005124,
+    "MAPE_%": 2.4829163832508145
+  },
+  "trained_at": "2026-10-21T13:44:35.060281",
+  "train_rows": 5832,
+  "test_rows": 2920,
+  "split_date": "2024-01-01",
+  "requires_scaling": false,
+  "tuning": {
+    "cv_strategy": "TimeSeriesSplit(n_splits=5)",
+    "random_forest_best_params": {
+      "bootstrap": true,
+      "max_depth": 9,
+      "max_features": 0.7,
+      "min_samples_leaf": 3,
+      "min_samples_split": 5,
+      "n_estimators": 654
+    },
+    "random_forest_cv_rmse": 0.1773,
+    "xgboost_best_params": {
+      "colsample_bytree": 0.8430179407605753,
+      "gamma": 0.08526206184364576,
+      "learning_rate": 0.019107223017939136,
+      "max_depth": 6,
+      "min_child_weight": 9,
+      "n_estimators": 615,
+      "reg_alpha": 0.5632882178455393,
+      "reg_lambda": 1.4635412563497903,
+      "subsample": 0.6063865008880857
+    },
+    "xgboost_cv_rmse": 0.1818
+  }
+}
