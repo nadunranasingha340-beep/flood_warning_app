@@ -22,9 +22,16 @@ const db = new Database(DB_FILE);
 db.pragma("journal_mode = WAL");
 db.pragma("foreign_keys = ON");
 
-// Create the schema on first boot (every statement in db.sql is idempotent)
+// Create the schema on first boot (CREATE TABLE statements are idempotent)
 if (fs.existsSync(SCHEMA_FILE)) {
   db.exec(fs.readFileSync(SCHEMA_FILE, "utf-8"));
+}
+
+// Migration: add email column to existing stations table (idempotent)
+try {
+  db.prepare("ALTER TABLE stations ADD COLUMN email TEXT").run();
+} catch (_err) {
+  // Column already exists — safe to ignore
 }
 
 export default db;

@@ -10,4 +10,6 @@ API.interceptors.request.use((config) => {
     return config;
 });
 
+export const explainStation = (payload) => API.post('/explain-station', payload);
+
 export default API;

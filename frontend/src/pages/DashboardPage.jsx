@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import API from '../services/api';
+import BasinMap from '../components/BasinMap';
 
 const riskStyles = (risk) =>
   risk === 'HIGH'
@@ -26,6 +27,7 @@ export default function DashboardPage({ onGoToEntry }) {
   const [editingId, setEditingId] = useState(null);
   const [tempThreshold, setTempThreshold] = useState('');
   const [loading, setLoading] = useState(true);
+  const [emailStatus, setEmailStatus] = useState(null);
 
   const loadStations = async () => {
     const res = await API.get('/stations');
@@ -39,11 +41,16 @@ export default function DashboardPage({ onGoToEntry }) {
 
   useEffect(() => {
     let active = true;
-    Promise.all([API.get('/stations'), API.get('/dashboard')])
-      .then(([stRes, dashRes]) => {
+    Promise.all([
+      API.get('/stations'),
+      API.get('/dashboard'),
+      API.get('/email-status').catch(() => ({ data: { sent: true } })),
+    ])
+      .then(([stRes, dashRes, emailRes]) => {
         if (!active) return;
         setStations(stRes.data);
         setSummary(dashRes.data);
+        setEmailStatus(emailRes.data);
         setLoading(false);
       })
       .catch((err) => {
@@ -104,6 +111,23 @@ export default function DashboardPage({ onGoToEntry }) {
               Enter today's readings
             </button>
           )}
+        </div>
+      )}
+
+      {emailStatus && !emailStatus.sent && (
+        <div className="mb-8 bg-red-500/10 border border-red-500/40 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span className="text-red-400 text-xl leading-none mt-0.5">!</span>
+            <div>
+              <p className="text-red-300 font-semibold">
+                Today's daily flood report has not been sent.
+              </p>
+              <p className="text-sm text-slate-300 mt-0.5">
+                Go to the Alert Center to send combined weather reports and any high-risk warnings
+                to station officers.
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -288,14 +312,31 @@ export default function DashboardPage({ onGoToEntry }) {
       </div>
 
       {/* Basin Map Section */}
-      <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700 h-96 mb-2 flex flex-col items-center justify-center text-slate-400 shadow-xl">
-        <p className="text-lg font-bold text-slate-200 mb-2">
-          Interactive GIS River Basin Map
-        </p>
-        <p className="text-sm max-w-md text-center text-slate-400 mb-2">
-          Visualizes real-time status for Chilaw, Kurunegala, Nikaweratiya, and Wariyapola
-          stations with risk markers based on station-specific threshold limits.
-        </p>
+      <h3 className="text-xl font-bold text-cyan-300 mb-4">River Basin Map</h3>
+      <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <p className="text-sm text-slate-400 max-w-2xl">
+            Live status for Chilaw, Kurunegala, Nikaweratiya and Wariyapola. Markers are coloured
+            by the flood risk level of the running forecast; click a marker for the station's
+            readings and forecast.
+          </p>
+          <div className="flex flex-wrap gap-3 text-xs">
+            <span className="flex items-center gap-1.5 text-slate-400">
+              <span className="w-3 h-3 rounded-full bg-red-500 inline-block" /> High risk
+            </span>
+            <span className="flex items-center gap-1.5 text-slate-400">
+              <span className="w-3 h-3 rounded-full bg-amber-500 inline-block" /> Medium risk
+            </span>
+            <span className="flex items-center gap-1.5 text-slate-400">
+              <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" /> Low risk
+            </span>
+            <span className="flex items-center gap-1.5 text-slate-400">
+              <span className="w-3 h-3 rounded-full bg-slate-500 inline-block" /> No data
+            </span>
+          </div>
+        </div>
+
+        <BasinMap stations={summary?.stations ?? []} height="h-[28rem]" />
       </div>
     </div>
   );

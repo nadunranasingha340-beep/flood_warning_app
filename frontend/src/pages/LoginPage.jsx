@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import API from '../services/api';
 
 export default function LoginPage({ onLogin }) {
@@ -14,7 +14,7 @@ export default function LoginPage({ onLogin }) {
 
     try {
       const res = await API.post('/auth/login', { username, password });
-      onLogin(res.data.token);
+      onLogin(res.data.token, { username: res.data.username, email: res.data.email });
     } catch (err) {
       setError(err.response?.data?.error || 'Invalid credentials or server error.');
     } finally {

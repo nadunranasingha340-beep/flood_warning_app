@@ -7,6 +7,7 @@ import predictionRoutes from './routes/predictionRoutes.js';
 import alertRoutes from './routes/alertRoutes.js';
 import telemetryRoutes from './routes/telemetryRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import trendRoutes from './routes/trendRoutes.js';
 
 dotenv.config();
 const app = express();
@@ -20,6 +21,7 @@ app.use('/api/stations', stationRoutes);
 app.use('/api', predictionRoutes);
 app.use('/api', telemetryRoutes);
 app.use('/api', dashboardRoutes);
+app.use('/api', trendRoutes);
 app.use('/api', alertRoutes);
 
 const PORT = process.env.PORT || 5002;

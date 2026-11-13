@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { saveTelemetry, backfillActualWaterLevels } from "../services/telemetryService.js";
+import { saveTelemetry, backfillActualWaterLevels, getHistory, buildFeatures } from "../services/telemetryService.js";
 import { predictForStation } from "../services/predictionService.js";
 dotenv.config();
 
@@ -46,9 +46,9 @@ export const makePrediction = async (req, res) => {
 };
 
 export const getPredictionsComparison = async (req, res) => {
-  try {
-    const rows = db
-      .prepare(
+    try {
+        const rows = db
+          .prepare(
         `SELECT p.id,
                 p.station_id,
                 p.prediction_date,
@@ -69,6 +69,46 @@ export const getPredictionsComparison = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+};
+
+export const explainPrediction = async (req, res) => {
+    const { station_id, date } = req.body;
+    try {
+        const station = db
+            .prepare("SELECT * FROM stations WHERE id = ?")
+            .get(station_id);
+        if (!station)
+            return res.status(404).json({ error: "Station not found" });
+
+        let explainDate = date;
+        if (!explainDate) {
+            const recent = db
+                .prepare(
+                    `SELECT prediction_date FROM predictions_log
+                     WHERE station_id = ?
+                     ORDER BY prediction_date DESC, id DESC
+                     LIMIT 1`
+                )
+                .get(station_id);
+            if (!recent)
+                return res.status(404).json({ error: "No recent prediction found for this station" });
+            explainDate = recent.prediction_date;
+        }
+
+        const history = getHistory(station.id, explainDate);
+        const features = buildFeatures(station, explainDate, history);
+
+        const flaskRes = await axios.post(`${FLASK_URL}/explain`, features, { timeout: 15000 });
+
+        res.json({
+            station: station.station_name,
+            station_code: station.station_code,
+            date: explainDate,
+            ...flaskRes.data,
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 
 export const getExplainabilityData = async (req, res) => {

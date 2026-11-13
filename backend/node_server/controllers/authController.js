@@ -19,7 +19,7 @@ export const loginAdmin = async (req, res) => {
             { expiresIn: '1d' }
         );
 
-        res.json({ token, role: user.role, username: user.username });
+        res.json({ token, role: user.role, username: user.username, email: user.email });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

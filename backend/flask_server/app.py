@@ -4,6 +4,7 @@ import joblib
 import pandas as pd
 import numpy as np
 import json
+import shap
 
 app = Flask(__name__)
 
@@ -18,6 +19,9 @@ feature_list = joblib.load(os.path.join(MODELS_DIR, 'feature_list.pkl'))
 
 with open(os.path.join(MODELS_DIR, 'model_metadata.json'), 'r') as f:
     metadata = json.load(f)
+
+# Initialize SHAP TreeExplainer for the loaded model
+explainer = shap.TreeExplainer(model)
 
 @app.route('/health', methods=['GET'])
 def health():
@@ -62,6 +66,55 @@ def predict():
             "risk_level": risk,
             "threshold_m": threshold,
             "model_used": metadata["best_model"]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@app.route('/explain', methods=['POST'])
+def explain():
+    """Returns SHAP values and feature contributions for a single prediction row."""
+    data = request.json
+    try:
+        # Build dataframe row matching expected feature list
+        input_df = pd.DataFrame([data])
+
+        # Ensure all columns from feature_list are present
+        for col in feature_list:
+            if col not in input_df.columns:
+                input_df[col] = 0.0
+
+        input_df = input_df[feature_list].apply(pd.to_numeric, errors="coerce")
+
+        X = input_df
+        if metadata.get("requires_scaling", False):
+            X = scaler.transform(X)
+
+        # Compute SHAP values
+        shap_values = explainer.shap_values(X)
+        base_value = float(explainer.expected_value)
+
+        # XGBoost regression returns a single array (not a list)
+        if isinstance(shap_values, list):
+            shap_values = shap_values[0]
+
+        # Build contribution list
+        contributions = []
+        for i, feat in enumerate(feature_list):
+            contributions.append({
+                "feature": feat,
+                "shap_value": float(shap_values[0][i]),
+                "feature_value": float(input_df.iloc[0][i]) if not pd.isna(input_df.iloc[0][i]) else None,
+            })
+
+        # Sort by absolute SHAP value (most influential first)
+        contributions.sort(key=lambda x: abs(x["shap_value"]), reverse=True)
+
+        pred = float(model.predict(X)[0])
+
+        return jsonify({
+            "base_value": base_value,
+            "prediction": pred,
+            "contributions": contributions,
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 400

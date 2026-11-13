@@ -5,3 +5,4 @@ numpy==2.5.4
 # Pinned to the version used to serialise models/scaler.pkl
 scikit-learn==1.8.0
 xgboost==3.4.1
+shap==0.54.1

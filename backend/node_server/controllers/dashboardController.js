@@ -65,6 +65,8 @@ export const getDashboardSummary = async (req, res) => {
         id: station.id,
         station_code: station.station_code,
         station_name: station.station_name,
+        latitude: station.latitude,
+        longitude: station.longitude,
         elevation: station.elevation,
         flood_threshold_m: station.flood_threshold_m,
         today_data_entered: hasToday,

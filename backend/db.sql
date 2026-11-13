@@ -32,6 +32,9 @@ CREATE TABLE IF NOT EXISTS stations (
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Migration: add email column to existing stations table (handled in db.js)
+-- ALTER TABLE stations ADD COLUMN email TEXT;
+
 -- Insert/Initialize the 4 River Basin Stations
 -- Elevations match the training dataset (daduru_oya_flood_model) because
 -- 'elevation' is an input feature of the trained model.
@@ -39,7 +42,7 @@ INSERT OR IGNORE INTO stations (id, station_code, station_name, latitude, longit
 (1, 'CHILAW', 'CHILAW-P.W.D', 7.580000, 79.780000, 3.50, 4.20),
 (2, 'KURUNEGALA', 'KURUNEGALA', 7.486300, 80.362300, 116.00, 5.50),
 (3, 'NIKAWERATIYA', 'NIKAWERATIYA', 7.768400, 80.122100, 49.00, 4.80),
-(4, 'WARIYAPOLA', 'WARIYAPOLA EXPTL.STATION', 7.538300, 80.226100, 85.00, 4.90);
+(4, 'WARIYAPOLA', 'WARIYAPOLA EXPTL.STATION', 7.63, 80.25, 85.00, 4.90);
 
 -- Emulate MySQL's ON UPDATE CURRENT_TIMESTAMP for stations
 CREATE TRIGGER IF NOT EXISTS trg_stations_updated_at
@@ -76,4 +79,19 @@ CREATE TABLE IF NOT EXISTS predictions_log (
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (station_id) REFERENCES stations (id) ON DELETE CASCADE,
     UNIQUE (station_id, prediction_date)
+);
+
+-- Migration: add email column to existing stations table (handled in db.js)
+-- ALTER TABLE stations ADD COLUMN email TEXT;
+
+-- 5. Email Log Table
+CREATE TABLE IF NOT EXISTS email_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    station_id INTEGER,
+    station_name TEXT,
+    recipient_email TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    sent_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status TEXT NOT NULL DEFAULT 'sent',
+    FOREIGN KEY (station_id) REFERENCES stations (id) ON DELETE SET NULL
 );
